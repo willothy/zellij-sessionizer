@@ -23,9 +23,10 @@ impl DirList {
 
     pub fn update_dirs(&mut self, dirs: Vec<String>) {
         dirs.iter().for_each(|dir| {
-            if !self.unique.contains(dir) {
-                self.unique.insert(dir.clone());
-                self.dirs.push(dir.clone());
+            let dir = shellexpand::full(dir).unwrap();
+            if !self.unique.contains(&*dir) {
+                self.unique.insert(dir.to_string());
+                self.dirs.push(dir.to_string());
             }
         });
         self.dirs.sort_by(|a, b| b.cmp(a));
@@ -38,7 +39,7 @@ impl DirList {
             self.cursor -= 1;
         }
     }
-    
+
     pub fn handle_down(&mut self) {
         if self.cursor < self.filtered_dirs.len().saturating_sub(1) {
             self.cursor += 1;
@@ -63,9 +64,11 @@ impl DirList {
         self.cursor = self.filtered_dirs.len().saturating_sub(1);
     }
 
-
     pub fn render(&self, rows: usize, _cols: usize) {
-        let from = self.cursor.saturating_sub(rows.saturating_sub(1) / 2).min(self.filtered_dirs.len().saturating_sub(rows));
+        let from = self
+            .cursor
+            .saturating_sub(rows.saturating_sub(1) / 2)
+            .min(self.filtered_dirs.len().saturating_sub(rows));
         let missing_rows = rows.saturating_sub(self.filtered_dirs.len());
         if missing_rows > 0 {
             for _ in 0..missing_rows {
@@ -90,4 +93,3 @@ impl DirList {
             })
     }
 }
-
